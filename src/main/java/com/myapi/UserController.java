@@ -1,11 +1,13 @@
 package com.myapi;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,31 +36,22 @@ public class UserController {
     @PatchMapping("/users/{id}")
     public UserDTO updateUser(
             @PathVariable Long id,
-            @RequestBody UserDTO updates
+            @RequestBody UserDTO update
     )
-//    {
-//        UserDTO response = new HashMap<>();
-//        //A HashMap cannot be assigned to a UserDTO
-//        response.put("id", id);
-//        response.put("updatesReceived", updates);
-//        response.put("message", "PATCH simulated successfully");
-//        //put(...) is a Map method, not a DTO method
-//        return response;
-//    }
     {
         // pretend you loaded this from a DB
-        UserDTO existing = new UserDTO();
-        existing.setId(id);
-        existing.setName("Alice"); // sample existing data
+        UserDTO userFromDb = new UserDTO();
+        userFromDb.setId(id);
+        userFromDb.setName("Alice"); // sample data "from" database
 
         // apply patch only for fields that came in
-        if (updates.getName() != null) {
-            existing.setName(updates.getName());
+        if (update.getName() != null) {
+            userFromDb.setName(update.getName());
         }
-        if (updates.getId() != 0) {
-            existing.setId(updates.getId());
+        if (update.getId() != null && !update.getId().equals(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Body id must match path id");
         }
 
-        return existing;
+        return userFromDb;
     }
 }
